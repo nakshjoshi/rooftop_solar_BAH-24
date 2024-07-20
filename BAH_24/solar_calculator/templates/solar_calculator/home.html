@@ -12,7 +12,8 @@
 <body>
     <h1>Solar Output Calculator</h1>
     <h2>North-East India</h2>
-    <form>
+    <form method="post" action="{% url 'process_data' %}">
+        {% csrf_token %}
         <input name="address" placeholder="Your Address">
         <br>
         <hr>

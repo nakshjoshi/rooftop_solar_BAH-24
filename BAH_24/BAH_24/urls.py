@@ -19,6 +19,6 @@ from django.urls import path
 from solar_calculator import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.home),
+    path('', views.home, name='home'),
+    path('process/', views.process_data, name='process_data'),
 ]
