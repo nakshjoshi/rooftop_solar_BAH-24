@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,18 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'solar_calculator/styles.css' %}">
 </head>
+
 <body>
+    <script>
+        { { map.script.render | safe } }
+    </script>
     <div class="container">
         <h1>Data Processed Successfully</h1>
     </div>
+    <div>
+        {% block map %}{% endblock map %}
+        {% block content %}{% endblock content %}
+    </div>
 </body>
+
 </html>

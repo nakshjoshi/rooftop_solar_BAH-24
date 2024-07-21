@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'solar_calculator'
+    'solar_calculator.apps.SolarCalculatorConfig'
 ]
 
 MIDDLEWARE = [

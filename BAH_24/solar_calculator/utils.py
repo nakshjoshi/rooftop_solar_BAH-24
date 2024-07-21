@@ -2,6 +2,77 @@ import json
 import math
 import geocoder
 import pandas as pd
+import folium
+from folium.plugins import Fullscreen, LocateControl, Geocoder
+
+from .models import Feature
+
+import folium
+from folium.plugins import Fullscreen, LocateControl, Geocoder
+
+from .models import Feature
+
+
+def basemap(request):
+    lat = 28.796628
+    long = 95.90469299
+    
+    polygon = "POLYGON((95.9047803753613 28.7966341544392, 95.9047099472798 28.796703756546, 95.9046056089836 28.7966218361895, 95.9046760370893 28.7965522341355, 95.9047803753613 28.7966341544392))"
+    
+    polygon_coords = read_polygon(polygon)
+    
+    map = folium.Map(
+        tiles='cartodbdark_matter',
+        location=[lat, long],
+        zoom_start=18
+    )
+
+    features = Feature.objects.all()
+
+    features_layer = folium.FeatureGroup(name='Features Layer').add_to(map)
+
+    for feature in features:
+        locations = [feature.latitude, feature.longitude]
+        folium.Marker(
+            locations,
+            tooltip= str(feature.name),
+            popup= feature.description
+        ).add_to(features_layer)
+        
+    folium.Polygon(locations=polygon_coords, color='yellow', weight=2, fill=True, fill_color='orange').add_to(map)
+
+    tile = folium.TileLayer(
+        tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attr = 'Esri',
+        name = 'Esri Satellite',
+        overlay = False,
+        control = True
+       ).add_to(map)
+    
+    folium.LayerControl(position='bottomright').add_to(map)
+    Fullscreen().add_to(map)
+    LocateControl().add_to(map)
+    Geocoder().add_to(map)
+    folium.LatLngPopup().add_to(map)
+
+    map = map._repr_html_()
+
+    context = {'map': map}
+
+    return context
+
+def read_polygon(polygon_str): 
+    cleaned_str = polygon_str.replace("POLYGON((", "").replace("))", "")
+    
+    coordinate_pairs = cleaned_str.split(", ")
+    
+    polygon_coords = [
+        (float(lat), float(long)) for long, lat in (pair.split() for pair in coordinate_pairs)
+    ]
+    
+    return polygon_coords
+    
+
 
 def geocode(text):
     g = geocoder.google(text)
