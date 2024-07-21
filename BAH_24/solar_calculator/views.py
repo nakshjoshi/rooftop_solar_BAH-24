@@ -1,5 +1,4 @@
 from django.shortcuts import render
-import time
 
 import solar_calculator.utils as utils
 from .forms import DataForm
