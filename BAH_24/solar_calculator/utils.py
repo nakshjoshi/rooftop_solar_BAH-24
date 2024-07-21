@@ -1,47 +1,31 @@
 import json
 import math
+import time
 import geocoder
 import pandas as pd
 import folium
 from folium.plugins import Fullscreen, LocateControl, Geocoder
 
-from .models import Feature
-
-import folium
-from folium.plugins import Fullscreen, LocateControl, Geocoder
-
-from .models import Feature
-
-
-def basemap(request):
-    lat = 28.796628
-    long = 95.90469299
+def renderMap(lat, long):
     
-    polygon = "POLYGON((95.9047803753613 28.7966341544392, 95.9047099472798 28.796703756546, 95.9046056089836 28.7966218361895, 95.9046760370893 28.7965522341355, 95.9047803753613 28.7966341544392))"
-    
-    polygon_coords = read_polygon(polygon)
-    
+    print("Coordinates:", lat, long)
+    start = time.time()
+    area, confidence, polygon = get_building_data(lat, long)
+    end = time.time()
+    print("Time taken:", end-start)
+    print("Area:", area, "Confidence:", confidence)
+            
     map = folium.Map(
         tiles='cartodbdark_matter',
         location=[lat, long],
         zoom_start=18
     )
-
-    features = Feature.objects.all()
-
-    features_layer = folium.FeatureGroup(name='Features Layer').add_to(map)
-
-    for feature in features:
-        locations = [feature.latitude, feature.longitude]
-        folium.Marker(
-            locations,
-            tooltip= str(feature.name),
-            popup= feature.description
-        ).add_to(features_layer)
         
+    polygon_coords = read_polygon(polygon)
+    
     folium.Polygon(locations=polygon_coords, color='yellow', weight=2, fill=True, fill_color='orange').add_to(map)
 
-    tile = folium.TileLayer(
+    folium.TileLayer(
         tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attr = 'Esri',
         name = 'Esri Satellite',
@@ -116,13 +100,15 @@ def get_building_data(lat, long):
     if not selected_row.empty:
         area = selected_row.iloc[0]['area_in_meters']
         confidence = selected_row.iloc[0]['confidence']
-        return area, confidence
+        polygon = selected_row.iloc[0]['geometry']
     
     else:
         df['distance'] = df.apply(lambda row: haversine(lat, long, row['latitude'], row['longitude']), axis=1)
         closest_row = df.loc[df['distance'].idxmin()]
         area = closest_row['area_in_meters']
         confidence = closest_row['confidence']
-        return area, confidence
+        polygon = closest_row['geometry']
+        
+    return area, confidence, polygon
     
     
