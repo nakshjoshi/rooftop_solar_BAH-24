@@ -3,6 +3,7 @@ import math
 import time
 import geocoder
 import pandas as pd
+import csv
 import folium
 from folium.plugins import Fullscreen, LocateControl, Geocoder
 
@@ -11,10 +12,12 @@ def renderMap(lat, long):
     print("Coordinates:", lat, long)
     start = time.time()
     area, confidence, polygon = get_building_data(lat, long)
+    power_incident = get_regional_power(lat, long)
     end = time.time()
     print("Time taken:", end-start)
     print("Area:", area, "Confidence:", confidence)
-            
+    print("Power incident:", power_incident)
+    
     map = folium.Map(
         tiles='cartodbdark_matter',
         location=[lat, long],
@@ -62,6 +65,7 @@ def geocode(text):
     g = geocoder.google(text)
     return g.latlng
 
+
 def find_file_number(lat, long):
     file_dir = 'solar_calculator/data/metadata.json'
     with open(file_dir, 'r') as f:
@@ -72,6 +76,7 @@ def find_file_number(lat, long):
         minLong, maxLong = val['minLong'], val['maxLong']
         if minLat <= lat <= maxLat and minLong <= long <= maxLong:
             return key
+
 
 def haversine(lat1, lon1, lat2, lon2):
     # Radius of the Earth in kilometers
@@ -89,6 +94,7 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     distance = R * c
     return distance
+
 
 def get_building_data(lat, long):
     file_num = find_file_number(lat, long)
@@ -111,4 +117,27 @@ def get_building_data(lat, long):
         
     return area, confidence, polygon
     
+    
+def get_regional_power(lat, long):
+    # Round coordinates to 2 decimal digits around 0.25 & 0.75
+    lat = get_closest_entries(lat)
+    long = get_closest_entries(long)
+    
+    file_name = "solar_calculator/data/solar_data.csv"
+    
+    with open(file_name, mode='r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            if float(row['LAT']) == lat and float(row['LON']) == long:
+                return row['ANN']
+    return None
+
+def get_closest_entries(num):
+    fraction, integer = math.modf(num)
+    
+    if fraction <= 0.50:
+        return integer + 0.25
+    elif fraction > 0.50:
+        return integer + 0.75
+
     
