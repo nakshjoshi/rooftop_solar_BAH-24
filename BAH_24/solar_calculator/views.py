@@ -26,4 +26,4 @@ def process_data(request):
     
     map = utils.renderMap(lat, long)
     
-    return render(request, 'map.html', map)
+    return render(request, 'result.html', map)

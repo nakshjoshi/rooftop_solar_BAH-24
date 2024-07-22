@@ -23,10 +23,6 @@ def renderMap(lat, long):
         location=[lat, long],
         zoom_start=18
     )
-        
-    polygon_coords = read_polygon(polygon)
-    
-    folium.Polygon(locations=polygon_coords, color='yellow', weight=2, fill=True, fill_color='orange').add_to(map)
 
     folium.TileLayer(
         tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -35,6 +31,11 @@ def renderMap(lat, long):
         overlay = False,
         control = True
        ).add_to(map)
+            
+    polygon_coords = read_polygon(polygon)
+    
+    folium.Polygon(locations=polygon_coords, color='yellow', weight=2, fill=True, fill_color='orange').add_to(map)
+
     
     folium.LayerControl(position='bottomright').add_to(map)
     Fullscreen().add_to(map)
@@ -44,7 +45,7 @@ def renderMap(lat, long):
 
     map = map._repr_html_()
 
-    context = {'map': map}
+    context = {'map': map, 'lat': lat, 'long': long, 'area': area, 'confidence': confidence,'energy': power_incident * area}
 
     return context
 
@@ -129,7 +130,7 @@ def get_regional_power(lat, long):
         reader = csv.DictReader(file)
         for row in reader:
             if float(row['LAT']) == lat and float(row['LON']) == long:
-                return row['ANN']
+                return float(row['ANN'])
     return None
 
 def get_closest_entries(num):
