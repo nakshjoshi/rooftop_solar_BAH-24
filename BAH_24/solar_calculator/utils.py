@@ -25,9 +25,9 @@ def renderMap(lat, long):
     
     tilt_angle = round(lat)
 
-    energy_per_day = total_power * area
-    energy_per_month = energy_per_day * 30
-    energy_per_year = energy_per_month * 12
+    power_per_day = total_power
+    power_per_month = power_per_day * 30
+    power_per_year = power_per_month * 12
 
     end = time.time()
     print("Time taken:", end - start)
@@ -73,9 +73,9 @@ def renderMap(lat, long):
         "angle": tilt_angle,
         "monthly_GHI": monthly_ghi,
         "confidence": confidence,
-        "daily_energy": energy_per_day,
-        "monthly_energy": energy_per_month,
-        "yearly_energy": energy_per_year,
+        "daily_power": power_per_day,
+        "monthly_power": power_per_month,
+        "yearly_power": power_per_year,
     }
 
     return context
