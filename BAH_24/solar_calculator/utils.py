@@ -7,6 +7,21 @@ import csv
 import folium
 from folium.plugins import Fullscreen, LocateControl, Geocoder
 
+months = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC",
+]
+
 
 def renderMap(lat, long):
 
@@ -14,16 +29,27 @@ def renderMap(lat, long):
     start = time.time()
     area, confidence, polygon = get_building_data(lat, long)
 
-    dhi = get_solar_data("DHI", lat, long)
-    dni = get_solar_data("DNI", lat, long)
-    ghi = get_solar_data("GHI", lat, long)
+    dhi_data = get_solar_data("DHI", lat, long)
+    dni_data = get_solar_data("DNI", lat, long)
+    ghi_data = get_solar_data("GHI", lat, long)
 
-    # usable_power = efficiency * total_power
-    total_power = ghi + 0.906 * dni + 0.094 * dhi
-
-    monthly_ghi = get_monthly_solar_data(lat, long)
+    dhi = float(dhi_data["ANN"])
+    dni = float(dni_data["ANN"])
+    ghi = float(ghi_data["ANN"])
     
     tilt_angle = round(lat)
+
+    monthly_power_data = []
+    for month in months:
+        monthDHI = float(dhi_data[month])
+        monthDNI = float(dni_data[month])
+        monthGHI = float(ghi_data[month])
+        month_power = monthGHI + math.cos(math.radians(tilt_angle)) * monthDNI + (1 - math.cos(math.radians(tilt_angle))) * monthDHI
+
+        monthly_power_data.append(month_power)
+
+    # usable_power = efficiency * total_power
+    total_power = ghi + math.cos(math.radians(tilt_angle)) * dni + (1 - math.cos(math.radians(tilt_angle))) * dhi
 
     power_per_day = total_power
     power_per_month = power_per_day * 30
@@ -71,14 +97,14 @@ def renderMap(lat, long):
         "dhi": dhi,
         "ghi": ghi,
         "angle": tilt_angle,
-        "monthly_ghi": monthly_ghi,
+        "monthly_solar_production": monthly_power_data,
         "confidence": confidence,
         "daily_power": power_per_day,
         "monthly_power": power_per_month,
         "yearly_power": power_per_year,
     }
-    
-    context['json_data'] = json.dumps(context)
+
+    context["json_data"] = json.dumps(context)
 
     return context
 
@@ -169,39 +195,7 @@ def get_solar_data(datatype, lat, long):
         reader = csv.DictReader(file)
         for row in reader:
             if float(row["LAT"]) == lat and float(row["LON"]) == long:
-                return float(row["ANN"])
-    return None
-
-
-# Returns a list of 12 GHI values, one for each month
-def get_monthly_solar_data(lat, long):
-
-    # Round coordinates to 2 decimal digits around 0.25 & 0.75
-    lat = get_closest_entry(lat)
-    long = get_closest_entry(long)
-
-    file_name = "solar_calculator/data/GHI.csv"
-
-    months = [
-        "JAN",
-        "FEB",
-        "MAR",
-        "APR",
-        "MAY",
-        "JUN",
-        "JUL",
-        "AUG",
-        "SEP",
-        "OCT",
-        "NOV",
-        "DEC"
-    ]
-
-    with open(file_name, mode="r") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            if float(row["LAT"]) == lat and float(row["LON"]) == long:
-                return list(row[month] for month in months)
+                return row
     return None
 
 

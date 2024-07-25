@@ -61,7 +61,7 @@
             const daily_power = data.daily_power;
             const monthly_power = data.monthly_power;
             const yearly_power = data.yearly_power;
-            const chartData = data.monthly_ghi;
+            const chartData = data.monthly_solar_production;
 
             const daily_energy = document.getElementById('daily_energy');
             const monthly_energy = document.getElementById('monthly_energy');
@@ -114,7 +114,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: "Region's GHI data",
+                        label: "Region's Solar Power Production",
                         data: chartData,
                         borderColor: '#C0DFA1',
                         borderWidth: 1,
