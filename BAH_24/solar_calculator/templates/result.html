@@ -14,15 +14,25 @@
             height: 100vh;
             margin: 0;
         }
+
         .sidebar {
             width: 300px;
             padding: 20px;
             background-color: #f8f9fa;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         }
+
         .map {
             flex-grow: 1;
             padding: 20px;
+        }
+
+        .areaPercent-container {
+            width: 300px;
+        }
+
+        .efficiency-container {
+            width: 300px;
         }
     </style>
 </head>
@@ -33,11 +43,73 @@
         <p><strong>Latitude: {{lat|safe}}</strong> <span id="latitude"></span></p>
         <p><strong>Longitude: {{long|safe}}</strong> <span id="longitude"></span></p>
         <p><strong>Area: {{area|safe}} m<sup>2</sup></strong> <span id="area"></span></p>
-        <p><strong>Solar Energy for roof: {{energy|safe}} kWh</strong> <span id="power"></span></p>
+        <p><strong>Energy incident per day: </strong> <span id="daily_energy"></span></p>
+        <p><strong>Energy incident per month: </strong> <span id="monthly_energy"></span></p>
+        <p><strong>Energy incident per year: </strong> <span id="yearly_energy"></span></p>
+
+        <div class="areaPercent-container">
+            <input type="range" id="areaPercent" min="0" max="100" value="100">
+            <p>Percentage of roof covered: <span id="areaPercentValue">100</span></p>
+        </div>
+
+        <div class="efficiency-container">
+            <input type="range" id="efficiency" min="0" max="100" value="20">
+            <p>Efficiency Percentage: <span id="efficiencyValue">100</span></p>
+        </div>
     </div>
 
     <div class="map">
         {{ map|safe }}
     </div>
+
+    <script type="application/json" id="data-script">
+        {
+            "fixedArea": {{area}},
+            "daily_power" : {{daily_power}},
+            "monthly_power": {{monthly_power}},
+            "yearly_power": {{yearly_power}}
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const data = JSON.parse(document.getElementById('data-script').textContent);
+            const fixedArea = data.fixedArea;
+            const daily_power = data.daily_power;
+            const monthly_power = data.monthly_power;
+            const yearly_power = data.yearly_power;
+
+            const daily_energy = document.getElementById('daily_energy');
+            const monthly_energy = document.getElementById('monthly_energy');
+            const yearly_energy = document.getElementById('yearly_energy');
+
+            const areaPercent = document.getElementById('areaPercent');
+            const areaPercentValue = document.getElementById('areaPercentValue');
+
+            const efficiency = document.getElementById('efficiency');
+            const efficiencyValue = document.getElementById('efficiencyValue');
+
+            areaPercentValue.textContent = areaPercent.value;
+            daily_energy.textContent = (daily_power * fixedArea * efficiency.value / 100).toFixed(2);
+            monthly_energy.textContent = (monthly_power * fixedArea * efficiency.value / 100).toFixed(2);
+            yearly_energy.textContent = (yearly_power * fixedArea * efficiency.value / 100).toFixed(2);
+
+            areaPercent.addEventListener('input', function () {
+                areaPercentValue.textContent = areaPercent.value;
+                daily_energy.textContent = (daily_power * fixedArea * areaPercent.value / 100).toFixed(2);
+                monthly_energy.textContent = (monthly_power * fixedArea * areaPercent.value / 100).toFixed(2);
+                yearly_energy.textContent = (yearly_power * fixedArea * areaPercent.value / 100).toFixed(2);
+            });
+
+            efficiency.addEventListener('input', function () {
+                efficiencyValue.textContent = efficiency.value;
+                daily_energy.textContent = (daily_power * fixedArea * efficiency.value / 100).toFixed(2);
+                monthly_energy.textContent = (monthly_power * fixedArea * efficiency.value / 100).toFixed(2);
+                yearly_energy.textContent = (yearly_power * fixedArea * efficiency.value / 100).toFixed(2);
+            });
+
+        });
+    </script>
 </body>
+
 </html>
