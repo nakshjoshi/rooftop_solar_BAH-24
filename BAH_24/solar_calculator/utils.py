@@ -71,12 +71,14 @@ def renderMap(lat, long):
         "dhi": dhi,
         "ghi": ghi,
         "angle": tilt_angle,
-        "monthly_GHI": monthly_ghi,
+        "monthly_ghi": monthly_ghi,
         "confidence": confidence,
         "daily_power": power_per_day,
         "monthly_power": power_per_month,
         "yearly_power": power_per_year,
     }
+    
+    context['json_data'] = json.dumps(context)
 
     return context
 
@@ -171,7 +173,7 @@ def get_solar_data(datatype, lat, long):
     return None
 
 
-# Returns a list of 12 GHI valuesm, one for each month
+# Returns a list of 12 GHI values, one for each month
 def get_monthly_solar_data(lat, long):
 
     # Round coordinates to 2 decimal digits around 0.25 & 0.75
