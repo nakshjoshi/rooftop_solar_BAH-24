@@ -6,52 +6,101 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Solar Output Calculator</title>
+    <style>
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            outline: 1px;
+        }
+
+        .slider::-moz-range-progress {
+            background: #A3D076;
+            height: 8px;
+        }
+
+        .slider::-moz-range-track {
+            background: #ddd;
+            height: 8px;
+        }
+    </style>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="w-full h-[400px] bg-gradient-to-r from-[#5151db] to-[#d820b0]">
-    <div class="grid grid-cols-6 gap-2  mx-auto h-full">
-        <div class="col-span-6 border-[2px] h-[320px] text-center rounded-lg bg-[white] p-1">
+<body class="w-full h-[400px] bg-gradient-to-r from-[#C0DFA1] to-[#DCE2BD] p-5">
+    <div class="grid grid-cols-6 gap-2 mx-auto h-full">
+        <div class="col-span-4 border-[3px] border-[#A3D076] rounded-lg bg-[white] p-1">
             {{map|safe}}
+
+            <div class="border-t border-[#A3D076] p-2 text-lg">
+                <p class="text-gray-700"><strong>Latitude: </strong>{{lat|safe}}</p>
+                <p class="text-gray-700"><strong>Longitude: </strong>{{long|safe}}</p>
+                <p class="text-gray-700"><strong>Building Detection Confidence: </strong>{{confidence|safe}}</p>
+
+            </div>
         </div>
-        <div class="col-span-1 border-[2px] h-[200px] rounded-lg flex flex-col gap-4 p-3 text-center bg-[white]">
-            <h1>DHI: {{dhi|safe}} kWh/m<sup>2</sup> day</h1>
-            <h1>DNI: {{dni|safe}} kWh/m<sup>2</sup> day</h1>
-            <h1>Optimum Tilt Angle: {{angle|safe}}°</h1>
-        </div>
-        <div class="col-span-1 border-[2px] h-[200px] rounded-lg flex flex-col gap-4 p-3 text-center bg-[white]">
-            <h1>Rooftop Area: {{area|safe}} m<sup>2</sup></h1>
-            <div class="areaPercent-container">
-                <input type="range" id="areaPercent" min="0" max="100" value="100">
-                <p>Roof covered: <span id="areaPercentValue">100</span> %</p>
+        <div class="grid grid-cols-2 gap-2 mx-auto h-full col-span-2">
+
+            <div
+                class="col-span-1 border-[3px] border-[#A3D076] h-[200px] rounded-lg flex flex-col gap-4 p-3 text-center bg-[white]">
+                <h1 class="text-gray-700"><strong>Rooftop Area: </strong>{{area|safe}} m<sup>2</sup></h1>
+                <div class="areaPercent-container">
+                    <input type="range" id="areaPercent" min="0" max="100" value="100" class="slider">
+                    <p class="text-gray-700"><strong>Roof covered: </strong><span id="areaPercentValue">100</span> %</p>
+                </div>
+
+                <div class="efficiency-container">
+                    <input type="range" id="efficiency" min="0" max="100" value="100" class="slider">
+                    <p class="text-gray-700"><strong>Solar Panel Efficiency: </strong><span id="efficiencyValue">100</span> %</p>
+                </div>
+            </div>
+            <div
+                class="col-span-1 border-[3px] border-[#A3D076] h-[200px] rounded-lg flex flex-col gap-4 p-3 text-center bg-[white]">
+                <h1 class="text-gray-700 font-extrabold">SOLAR ENERGY PRODUCED</h1>
+                <h1 class="text-gray-700"><strong>Daily: </strong><span id="daily_energy"></span> kWh</h1>
+                <h1 class="text-gray-700"><strong>Monthly: </strong><span id="monthly_energy"></span> kWh</h1>
+                <h1 class="text-gray-700"><strong>Yearly: </strong><span id="yearly_energy"></span> kWh</h1>
+
             </div>
 
-            <div class="efficiency-container">
-                <input type="range" id="efficiency" min="0" max="100" value="100">
-                <p>Solar Panel Efficiency: <span id="efficiencyValue">100</span> %</p>
+            <div
+                class="col-span-1 border-[3px] border-[#A3D076] rounded-lg flex flex-col justify-between p-4 text-center bg-white h-full">
+                <h2 class="text-lg font-medium text-gray-700">
+                    <strong>DHI:</strong> {{dhi|safe}} kWh/m<sup>2</sup> day
+                </h2>
+                <h2 class="text-lg font-medium text-gray-700">
+                    <strong>DNI:</strong> {{dni|safe}} kWh/m<sup>2</sup> day
+                </h2>
+                <h2 class="text-lg font-medium text-gray-700">
+                    <strong>Optimum Tilt Angle:</strong> {{angle|safe}}°
+                </h2>
             </div>
-        </div>
-        <div class="col-span-1 border-[2px] h-[200px] rounded-lg flex flex-col gap-4 p-3 text-center bg-[white]">
-            <h1 class="font-bold">SOLAR ENERGY PRODUCED</h1>
-            <h1>Daily: <span id="daily_energy"></span> kWh</h1>
-            <h1>Monthly: <span id="monthly_energy"></span> kWh</h1>
-            <h1>Yearly: <span id="yearly_energy"></span> kWh</h1>
 
-        </div>
-        <div
-            class="col-start-4 col-end-7 border-[2px] row-span-1 h-[200px] rounded-lg text-center p-8  bg-[white]">
-            <canvas id="monthlyGHIChart"></canvas>
-        </div>
-        <div
-            class="col-start-1 col-end-7 border-[2px] h-[150px] rounded-lg  text-center p-16 bg-[white]">
-            <div class="input-container">
-                <input type="number" id="monthlyUsage" placeholder="Monthly electricity bill (in kWh)" min="0">
-                <button id="checkButton">Check</button>
-                <h1>Our recommendation: </h1>
-                <input type="text" id="statusBox" readonly>
+
+            <div
+                class="col-span-1 border-[3px] border-[#A3D076] rounded-lg flex flex-col gap-4 p-3 text-center bg-[white]">
+                <div class="input-container">
+                    <label for="monthlyUsage" class="block mb-2 text-sm font-medium text-gray-700">Solar or Grid</label>
+                    <input type="number" id="monthlyUsage" placeholder="Monthly power use (kWh)" min="0"
+                        class="p-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-lime-100">
+
+                    <button id="checkButton"
+                        class="w-full p-2 mb-4 text-white bg-[#A3D076] rounded hover:bg-blue-400 focus:outline-none focus:ring-2">
+                        Check
+                    </button>
+
+                    <input type="text" id="statusBox" readonly
+                        class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                </div>
+            </div>
+            <div
+                class="col-span-2 border-[3px] border-[#A3D076] h-[275px] rounded-lg flex flex-col gap-4 p-3 text-center bg-[white]">
+                <canvas id="monthlyGHIChart"></canvas>
             </div>
         </div>
+
+
     </div>
 
     <script>
