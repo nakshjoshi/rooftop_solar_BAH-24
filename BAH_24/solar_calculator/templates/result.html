@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="efficiency-container">
-                    <input type="range" id="efficiency" min="0" max="100" value="100" class="slider">
+                    <input type="range" id="efficiency" min="0" max="100" value="25" class="slider">
                     <p class="text-gray-700"><strong>Solar Panel Efficiency: </strong><span id="efficiencyValue">100</span> %</p>
                 </div>
             </div>
@@ -71,6 +71,9 @@
                 </h2>
                 <h2 class="text-lg font-medium text-gray-700">
                     <strong>DNI:</strong> {{dni|safe}} kWh/m<sup>2</sup> day
+                </h2>
+                <h2 class="text-lg font-medium text-gray-700">
+                    <strong>GHI:</strong> {{ghi|safe}} kWh/m<sup>2</sup> day
                 </h2>
                 <h2 class="text-lg font-medium text-gray-700">
                     <strong>Optimum Tilt Angle:</strong> {{angle|safe}}°

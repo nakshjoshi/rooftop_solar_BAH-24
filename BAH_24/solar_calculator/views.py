@@ -12,8 +12,8 @@ def process_data(request):
         form = DataForm(request.POST)
         if form.is_valid():
             address = form.cleaned_data['address']
-            lat = float(form.cleaned_data['latitude'])
-            long = float(form.cleaned_data['longitude'])
+            lat = form.cleaned_data['latitude']
+            long = form.cleaned_data['longitude']
             
             # TODO: Fix error here
             if not (lat or long):
@@ -24,6 +24,6 @@ def process_data(request):
         else:
             form = DataForm()
     
-    map = utils.renderMap(lat, long)
+    map = utils.renderMap(float(lat), float(long))
     
     return render(request, 'result.html', map)

@@ -1,7 +1,8 @@
 import json
 import math
 import time
-import geocoder
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 import pandas as pd
 import csv
 import folium
@@ -36,7 +37,7 @@ def renderMap(lat, long):
     dhi = float(dhi_data["ANN"])
     dni = float(dni_data["ANN"])
     ghi = float(ghi_data["ANN"])
-    
+
     tilt_angle = round(lat)
 
     monthly_power_data = []
@@ -44,12 +45,20 @@ def renderMap(lat, long):
         monthDHI = float(dhi_data[month])
         monthDNI = float(dni_data[month])
         monthGHI = float(ghi_data[month])
-        month_power = monthGHI + math.cos(math.radians(tilt_angle)) * monthDNI + (1 - math.cos(math.radians(tilt_angle))) * monthDHI
+        month_power = (
+            monthGHI
+            + math.cos(math.radians(tilt_angle)) * monthDNI
+            + (1 - math.cos(math.radians(tilt_angle))) * monthDHI
+        )
 
         monthly_power_data.append(month_power)
 
     # usable_power = efficiency * total_power
-    total_power = ghi + math.cos(math.radians(tilt_angle)) * dni + (1 - math.cos(math.radians(tilt_angle))) * dhi
+    total_power = (
+        ghi
+        + math.cos(math.radians(tilt_angle)) * dni
+        + (1 - math.cos(math.radians(tilt_angle))) * dhi
+    )
 
     power_per_day = total_power
     power_per_month = power_per_day * 30
@@ -71,6 +80,8 @@ def renderMap(lat, long):
     ).add_to(map)
 
     polygon_coords = read_polygon(polygon)
+    
+    print(polygon_coords)
 
     folium.Polygon(
         locations=polygon_coords,
@@ -123,8 +134,12 @@ def read_polygon(polygon_str):
 
 
 def geocode(text):
-    g = geocoder.google(text)
-    return g.latlng
+    geolocator = Nominatim(user_agent="solar_predictor")
+    try:
+        location = geolocator.geocode(text)
+        return (location.latitude, location.longitude)
+    except GeocoderTimedOut:
+        return geocode(text)
 
 
 def find_file_number(lat, long):
